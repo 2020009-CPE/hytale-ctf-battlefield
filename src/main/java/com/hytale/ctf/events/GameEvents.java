@@ -36,8 +36,8 @@ public class GameEvents {
     public void onGameStart() {
         System.out.println("=== CTF Game Starting ===");
         
-        // Trigger game start in CTFGame
-        game.start();
+        // TODO: Trigger game start in CTFGame - requires Arena parameter
+        // game.start(arena);
         
         // Show countdown to all players
         showCountdown();
@@ -59,8 +59,8 @@ public class GameEvents {
     public void onGameEnd(String winningTeam) {
         System.out.println("=== CTF Game Ending ===");
         
-        // Trigger game end in CTFGame
-        game.end();
+        // TODO: Trigger game end in CTFGame - use game.stop() instead of game.end()
+        game.stop();
         
         // Broadcast results
         if (winningTeam != null) {
@@ -169,11 +169,11 @@ public class GameEvents {
      * Displays final scores at game end.
      */
     private void displayFinalScores() {
-        var scores = game.getScores();
+        // TODO: CTFGame.getScores() returns Map<CTFTeam, AtomicInteger>, not Map<String, Integer>
+        //       Use game.getScore(CTFTeam.RED) and game.getScore(CTFTeam.BLUE) instead
         System.out.println("=== Final Scores ===");
-        scores.forEach((team, score) -> 
-            System.out.println("%s: %d".formatted(team, score))
-        );
+        System.out.println("Red: " + game.getScore(com.hytale.ctf.game.CTFTeam.RED));
+        System.out.println("Blue: " + game.getScore(com.hytale.ctf.game.CTFTeam.BLUE));
     }
     
     /**
