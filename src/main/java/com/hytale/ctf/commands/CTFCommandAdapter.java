@@ -21,24 +21,22 @@ public class CTFCommandAdapter implements Command {
         FlagManager flagManager,
         PlayerManager playerManager,
         TeamManager teamManager,
-        CTFGame game
+        CTFGame game,
+        com.hytale.ctf.storage.DataManager dataManager
     ) {
         this.ctfCommand = new CTFCommand(
             arenaManager,
             flagManager,
             playerManager,
             teamManager,
-            game
+            game,
+            dataManager
         );
     }
     
     @Override
     public boolean execute(CommandSender sender, String[] args) {
-        String result = ctfCommand.execute(sender, args);
-        if (result != null && !result.isEmpty()) {
-            sender.sendMessage(result);
-        }
-        return true;
+        return ctfCommand.execute(sender, args);
     }
     
     @Override

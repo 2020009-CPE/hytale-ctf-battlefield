@@ -33,4 +33,20 @@ public enum CTFTeam {
     public CTFTeam opposite() {
         return this == RED ? BLUE : RED;
     }
+    
+    /**
+     * Parse team from string (case insensitive)
+     */
+    public static CTFTeam fromString(String name) {
+        if (name == null) {
+            return null;
+        }
+        String lower = name.toLowerCase();
+        if (lower.equals("red")) {
+            return RED;
+        } else if (lower.equals("blue")) {
+            return BLUE;
+        }
+        return null;
+    }
 }

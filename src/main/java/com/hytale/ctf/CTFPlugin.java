@@ -121,15 +121,17 @@ public class CTFPlugin extends HytaleMod {
         teamManager = new TeamManager();
         playerManager = new PlayerManager(dataManager);
         flagManager = new FlagManager(structureManager);
-        alertManager = new AlertManager(getServer());
+        // AlertManager constructor requires (MessageUtil, HytaleServer)
+        // MessageUtil is a utility class with only static methods and private constructor
+        alertManager = new AlertManager(null, getServer());
         hudManager = new HUDManager(getServer());
+        // CTFGame constructor requires (ArenaManager, FlagManager, PlayerManager, TeamManager, StructureManager)
         game = new CTFGame(
             arenaManager,
             flagManager,
             playerManager,
             teamManager,
-            alertManager,
-            hudManager
+            structureManager
         );
         
         getLogger().info("Managers initialized");
@@ -142,12 +144,14 @@ public class CTFPlugin extends HytaleMod {
         getLogger().info("Registering commands...");
         
         // Create and register the CTF command
+        // CTFCommandAdapter wraps CTFCommand which requires DataManager
         Command ctfCommand = new CTFCommandAdapter(
             arenaManager,
             flagManager,
             playerManager,
             teamManager,
-            game
+            game,
+            dataManager
         );
         getCommandManager().registerCommand(ctfCommand);
         
@@ -161,9 +165,12 @@ public class CTFPlugin extends HytaleMod {
         getLogger().info("Registering event handlers...");
         
         blockEvents = new BlockEvents(game, arenaManager);
-        flagEvents = new FlagEvents(game, flagManager, playerManager);
-        gameEvents = new GameEvents(game);
-        playerEvents = new PlayerEvents(game, playerManager, teamManager);
+        // FlagEvents constructor requires (CTFGame, FlagManager, PlayerManager, AlertManager, HUDManager)
+        flagEvents = new FlagEvents(game, flagManager, playerManager, alertManager, hudManager);
+        // GameEvents constructor requires (CTFGame, AlertManager, HUDManager)
+        gameEvents = new GameEvents(game, alertManager, hudManager);
+        // PlayerEvents constructor requires (CTFGame, PlayerManager, TeamManager, FlagManager, AlertManager, HUDManager)
+        playerEvents = new PlayerEvents(game, playerManager, teamManager, flagManager, alertManager, hudManager);
         
         // Register Hytale event listeners
         EventManager eventManager = getEventManager();

@@ -57,23 +57,25 @@ public class PlayerEvents {
         // Add player to manager
         playerManager.addPlayer(playerName);
         
-        // Auto-assign to team if game is active
-        if (game.isActive()) {
-            String team = teamManager.getSmallestTeam();
-            teamManager.addPlayer(playerName, team);
-            System.out.println("%s assigned to %s team".formatted(playerName, team));
-            
-            event.getPlayer().sendMessage("Welcome to CTF! You are on " + team + " team");
-            alertManager.showTitle(playerName, "Welcome to CTF!", "You are on " + team + " team");
-        }
+        // TODO: Auto-assign to team if game is active
+        // TeamManager.getSmallestTeam() and addPlayer(String, String) not implemented
+        // if (game.isActive()) {
+        //     String team = teamManager.getSmallestTeam();
+        //     teamManager.addPlayer(playerName, team);
+        //     System.out.println("%s assigned to %s team".formatted(playerName, team));
+        //     
+        //     event.getPlayer().sendMessage("Welcome to CTF! You are on " + team + " team");
+        //     alertManager.showTitle(playerName, "Welcome to CTF!", "You are on " + team + " team");
+        // }
         
+        // TODO: CTFGame.getScores() not implemented - use getScore(CTFTeam) instead
         // Show current HUD state
-        if (game.isActive()) {
-            hudManager.updateScoreboard(
-                playerManager.getAllPlayers(),
-                game.getScores()
-            );
-        }
+        // if (game.isActive()) {
+        //     hudManager.updateScoreboard(
+        //         playerManager.getAllPlayers(),
+        //         game.getScores()
+        //     );
+        // }
     }
     
     /**
@@ -88,22 +90,23 @@ public class PlayerEvents {
         // Handle flag if player was carrying one
         handleFlagOnLeave(playerName);
         
-        // Remove from team
-        String team = playerManager.getTeam(playerName);
-        if (team != null) {
-            teamManager.removePlayer(playerName, team);
-        }
+        // TODO: PlayerManager.getTeam() not implemented - need to add team tracking to CTFPlayer
+        // String team = playerManager.getTeam(playerName);
+        // if (team != null) {
+        //     teamManager.removePlayer(playerName, team);
+        // }
         
         // Remove from player manager
         playerManager.removePlayer(playerName);
         
+        // TODO: CTFGame.getScores() not implemented - use getScore(CTFTeam) instead
         // Update scoreboard for remaining players
-        if (game.isActive()) {
-            hudManager.updateScoreboard(
-                playerManager.getAllPlayers(),
-                game.getScores()
-            );
-        }
+        // if (game.isActive()) {
+        //     hudManager.updateScoreboard(
+        //         playerManager.getAllPlayers(),
+        //         game.getScores()
+        //     );
+        // }
     }
     
     /**
@@ -124,36 +127,39 @@ public class PlayerEvents {
             return;
         }
         
-        // Update kill/death stats
-        if (killerName != null) {
-            playerManager.addKill(killerName);
-        }
-        playerManager.addDeath(playerName);
+        // TODO: PlayerManager.addKill() and addDeath() not implemented
+        // Need to add these methods to track player statistics
+        // if (killerName != null) {
+        //     playerManager.addKill(killerName);
+        // }
+        // playerManager.addDeath(playerName);
         
-        // Handle flag drop if player was carrying one
-        String carriedFlag = flagManager.getCarriedFlag(playerName);
-        if (carriedFlag != null) {
-            double[] deathLocation = playerManager.getLocation(playerName);
-            flagManager.dropFlag(carriedFlag, deathLocation);
-            
-            String flagTeam = flagManager.getFlagTeam(carriedFlag);
-            
-            if (killerName != null) {
-                alertManager.broadcastCarrierKilled(killerName);
-                alertManager.showTitle(killerName, "Carrier Killed!", "+50 points");
-                event.getKiller().sendMessage("You killed the flag carrier! +50 points");
-            }
-            
-            event.getPlayer().sendMessage("You dropped the " + flagTeam + " flag!");
-            System.out.println("%s flag dropped at death location".formatted(flagTeam));
-        }
+        // TODO: Handle flag drop if player was carrying one
+        // FlagManager.getCarriedFlag() returns Optional<CTFTeam>, not String
+        // FlagManager.dropFlag() not implemented - need to add flag drop logic
+        // FlagManager.getFlagTeam() not implemented
+        // PlayerManager.getLocation() not implemented
+        // Optional<CTFTeam> carriedFlagTeam = flagManager.getFlagCarriedBy(playerName);
+        // if (carriedFlagTeam.isPresent()) {
+        //     double[] deathLocation = playerManager.getLocation(playerName);
+        //     flagManager.dropFlag(carriedFlagTeam.get(), deathLocation);
+        //     
+        //     if (killerName != null) {
+        //         alertManager.broadcastCarrierKilled(killerName);
+        //         alertManager.showTitle(killerName, "Carrier Killed!", "+50 points");
+        //         event.getKiller().sendMessage("You killed the flag carrier! +50 points");
+        //     }
+        //     
+        //     event.getPlayer().sendMessage("You dropped the " + carriedFlagTeam.get().name() + " flag!");
+        //     System.out.println("%s flag dropped at death location".formatted(carriedFlagTeam.get().name()));
+        // }
         
-        // Respawn player
-        String team = playerManager.getTeam(playerName);
-        if (team != null) {
-            playerManager.respawnPlayer(playerName, team);
-            event.getPlayer().sendMessage("You have been respawned");
-        }
+        // TODO: Respawn player - PlayerManager.getTeam() and respawnPlayer() not implemented
+        // String team = playerManager.getTeam(playerName);
+        // if (team != null) {
+        //     playerManager.respawnPlayer(playerName, team);
+        //     event.getPlayer().sendMessage("You have been respawned");
+        // }
     }
     
     /**
@@ -162,15 +168,14 @@ public class PlayerEvents {
      * @param playerName the name of the player leaving
      */
     private void handleFlagOnLeave(String playerName) {
-        String carriedFlag = flagManager.getCarriedFlag(playerName);
-        if (carriedFlag != null) {
-            // Return flag to base when player leaves
-            flagManager.returnFlag(carriedFlag);
-            
-            String flagTeam = flagManager.getFlagTeam(carriedFlag);
-            alertManager.broadcastFlagReturned(flagTeam);
-            
-            System.out.println("%s flag returned due to player quit".formatted(flagTeam));
-        }
+        // TODO: FlagManager.getCarriedFlag() returns Optional<CTFTeam>, not String
+        // FlagManager.returnFlag() not implemented - need to add flag return logic
+        // FlagManager.getFlagTeam() not implemented
+        // Optional<CTFTeam> carriedFlagTeam = flagManager.getFlagCarriedBy(playerName);
+        // if (carriedFlagTeam.isPresent()) {
+        //     flagManager.returnFlag(carriedFlagTeam.get());
+        //     alertManager.broadcastFlagReturned(carriedFlagTeam.get().name());
+        //     System.out.println("%s flag returned due to player quit".formatted(carriedFlagTeam.get().name()));
+        // }
     }
 }

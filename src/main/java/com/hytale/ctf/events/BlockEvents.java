@@ -163,13 +163,17 @@ public class BlockEvents {
         String playerName = event.getPlayer().getName();
         
         // Determine which flag was broken
-        boolean isRedFlag = blockType.contains("flag_red");
-        boolean isBlueFlag = blockType.contains("flag_blue");
+        com.hytale.ctf.game.CTFTeam stolenTeam = null;
+        if (blockType.contains("flag_red")) {
+            stolenTeam = com.hytale.ctf.game.CTFTeam.RED;
+        } else if (blockType.contains("flag_blue")) {
+            stolenTeam = com.hytale.ctf.game.CTFTeam.BLUE;
+        }
         
-        if (isRedFlag) {
-            game.handleFlagSteal(playerName, "red");
-        } else if (isBlueFlag) {
-            game.handleFlagSteal(playerName, "blue");
+        if (stolenTeam != null) {
+            // Determine the player's team (opposite of stolen flag)
+            com.hytale.ctf.game.CTFTeam playerTeam = stolenTeam.opposite();
+            game.handleFlagSteal(playerTeam, stolenTeam);
         }
         
         // Allow the break (flag pickup)

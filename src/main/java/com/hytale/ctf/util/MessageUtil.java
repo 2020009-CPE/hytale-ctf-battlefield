@@ -51,10 +51,24 @@ public final class MessageUtil {
     }
     
     /**
+     * Alias for flagStolen
+     */
+    public static String formatFlagStolen(String team, String player) {
+        return flagStolen(team, player);
+    }
+    
+    /**
      * Format a flag captured message
      */
     public static String flagCaptured(String team, String player) {
         return format(String.format("§a%s TEAM SCORES! %s captured the flag!", team, player));
+    }
+    
+    /**
+     * Alias for flagCaptured
+     */
+    public static String formatFlagCaptured(String team, String player) {
+        return flagCaptured(team, player);
     }
     
     /**
@@ -65,10 +79,24 @@ public final class MessageUtil {
     }
     
     /**
+     * Alias for flagReturned
+     */
+    public static String formatFlagReturned(String team) {
+        return flagReturned(team);
+    }
+    
+    /**
      * Format a carrier killed message
      */
     public static String carrierKilled(String killer) {
         return format(String.format("§c%s killed the flag carrier! Flag returned!", killer));
+    }
+    
+    /**
+     * Alias for carrierKilled
+     */
+    public static String formatCarrierKilled(String killer) {
+        return carrierKilled(killer);
     }
     
     /**
