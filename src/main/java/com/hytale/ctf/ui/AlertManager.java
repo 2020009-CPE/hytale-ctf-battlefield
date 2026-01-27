@@ -1,5 +1,6 @@
 package com.hytale.ctf.ui;
 
+import com.hytale.api.server.HytaleServer;
 import com.hytale.ctf.util.MessageUtil;
 import java.util.List;
 
@@ -12,14 +13,17 @@ import java.util.List;
 public class AlertManager {
     
     private final MessageUtil messageUtil;
+    private final HytaleServer server;
     
     /**
      * Constructs a new AlertManager with the specified message utility.
      * 
      * @param messageUtil the message utility for formatting messages
+     * @param server the Hytale server instance
      */
-    public AlertManager(MessageUtil messageUtil) {
+    public AlertManager(MessageUtil messageUtil, HytaleServer server) {
         this.messageUtil = messageUtil;
+        this.server = server;
     }
     
     /**
@@ -72,8 +76,9 @@ public class AlertManager {
      * @param subtitle the subtitle text
      */
     public void showTitle(String playerName, String title, String subtitle) {
-        // Implementation would interact with game server API
-        System.out.println("Title to %s: %s | %s".formatted(playerName, title, subtitle));
+        server.getPlayer(playerName).ifPresent(player -> 
+            player.sendTitle(title, subtitle, 10, 70, 20)
+        );
     }
     
     /**
@@ -83,8 +88,9 @@ public class AlertManager {
      * @param message the message to display in the action bar
      */
     public void showActionBar(String playerName, String message) {
-        // Implementation would interact with game server API
-        System.out.println("ActionBar to %s: %s".formatted(playerName, message));
+        server.getPlayer(playerName).ifPresent(player -> 
+            player.sendActionBar(message)
+        );
     }
     
     /**
@@ -94,8 +100,7 @@ public class AlertManager {
      * @param type the type of alert
      */
     private void broadcast(String message, AlertType type) {
-        // Implementation would broadcast to all online players
-        System.out.println("[%s] %s".formatted(type, message));
+        server.broadcast(message);
     }
     
     /**

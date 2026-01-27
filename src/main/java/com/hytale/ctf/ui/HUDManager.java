@@ -1,5 +1,6 @@
 package com.hytale.ctf.ui;
 
+import com.hytale.api.server.HytaleServer;
 import java.util.List;
 import java.util.Map;
 
@@ -12,12 +13,16 @@ import java.util.Map;
 public class HUDManager {
     
     private final Scoreboard scoreboard;
+    private final HytaleServer server;
     
     /**
      * Constructs a new HUDManager with a new scoreboard instance.
+     * 
+     * @param server the Hytale server instance
      */
-    public HUDManager() {
+    public HUDManager(HytaleServer server) {
         this.scoreboard = new Scoreboard();
+        this.server = server;
     }
     
     /**
@@ -39,7 +44,9 @@ public class HUDManager {
      */
     public void showFlagStatus(String playerName, FlagStatus yourFlagStatus, FlagStatus enemyFlagStatus) {
         String message = formatFlagStatus(yourFlagStatus, enemyFlagStatus);
-        System.out.println("Flag status for %s: %s".formatted(playerName, message));
+        server.getPlayer(playerName).ifPresent(player -> 
+            player.sendActionBar(message)
+        );
     }
     
     /**
@@ -50,8 +57,10 @@ public class HUDManager {
      */
     public void updateTimer(List<String> players, int timeRemaining) {
         String timeDisplay = formatTime(timeRemaining);
-        players.forEach(player -> 
-            System.out.println("Timer for %s: %s".formatted(player, timeDisplay))
+        players.forEach(playerName -> 
+            server.getPlayer(playerName).ifPresent(player -> 
+                player.sendActionBar(timeDisplay)
+            )
         );
     }
     
@@ -71,7 +80,9 @@ public class HUDManager {
             carrierLocation[1], 
             carrierLocation[2]
         );
-        System.out.println("Carrier indicator for %s: Location %s".formatted(playerName, locationStr));
+        server.getPlayer(playerName).ifPresent(player -> 
+            player.sendActionBar("Carrier at: " + locationStr)
+        );
     }
     
     /**
