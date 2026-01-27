@@ -4,7 +4,7 @@ import java.util.Objects;
 
 /**
  * Arena data class representing a CTF battlefield.
- * Uses Java 25 record for immutable arena configuration.
+ * Uses Java 17 record for immutable arena configuration.
  * 
  * @param name unique identifier for the arena
  * @param region the playable area boundaries
