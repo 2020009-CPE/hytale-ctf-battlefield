@@ -1,0 +1,81 @@
+# Hytale CTF Battlefield Configuration
+
+# Default game settings
+game:
+  default-capture-limit: 3
+  default-time-limit: 0  # 0 = unlimited
+  default-build-zone: 10  # blocks from flag
+  default-nobuild-zone: 3  # blocks from flag
+  enable-overtime: true
+  mercy-rule-difference: 5
+  
+# Arena settings
+arena:
+  max-arenas: 50
+  auto-regenerate: true
+  regenerate-on-capture: false  # Only regen flag structures
+  full-regenerate-on-end: true
+  
+# Flag settings
+flag:
+  require-own-flag: true  # Must have own flag to capture
+  instant-return-on-death: true
+  instant-return-on-disconnect: true
+  carrier-visible: true
+  carrier-particles: true
+  
+# Team settings
+team:
+  auto-balance: true
+  allow-team-selection: true
+  max-team-difference: 1  # Max player difference between teams
+  
+# Build & Destroy settings
+building:
+  enabled: true
+  max-blocks-per-player: 500
+  allowed-blocks:
+    - stone
+    - cobblestone
+    - wood
+    - planks
+    - dirt
+    - sand
+    - gravel
+  height-limit: 50
+  
+breaking:
+  enabled: true
+  protect-spawn-radius: 5
+  
+# Statistics
+stats:
+  enabled: true
+  save-interval: 300  # seconds
+  track-detailed-stats: true
+  
+# Alerts and UI
+alerts:
+  broadcast-flag-events: true
+  show-carrier-marker: true
+  hud-enabled: true
+  scoreboard-enabled: true
+  
+# Storage
+storage:
+  type: json  # json or yaml
+  auto-save: true
+  backup-interval: 3600  # seconds
+  
+# Messages (supports color codes with &)
+messages:
+  prefix: "&8[&bCTF&8]&r "
+  flag-stolen: "&c{team} TEAM's flag has been CAPTURED by {player}!"
+  flag-captured: "&a{team} TEAM SCORES! {player} captured the flag!"
+  flag-returned: "&e{team} TEAM's flag has returned to base!"
+  carrier-killed: "&c{killer} killed the flag carrier! Flag returned!"
+  game-start: "&aGame starting in {seconds} seconds..."
+  game-end: "&6{team} TEAM WINS! Final score: {red} - {blue}"
+  team-join: "&aYou joined the {team} team!"
+  arena-created: "&aArena '{arena}' created successfully!"
+  snapshot-saved: "&aSnapshot saved for arena '{arena}'!"
