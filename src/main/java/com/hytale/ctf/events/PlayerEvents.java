@@ -6,6 +6,9 @@ import com.hytale.ctf.team.TeamManager;
 import com.hytale.ctf.flag.FlagManager;
 import com.hytale.ctf.ui.AlertManager;
 import com.hytale.ctf.ui.HUDManager;
+import com.hytale.api.event.PlayerJoinEvent;
+import com.hytale.api.event.PlayerQuitEvent;
+import com.hytale.api.event.PlayerDeathEvent;
 
 /**
  * Handles player-related events during CTF games.
@@ -45,9 +48,10 @@ public class PlayerEvents {
     /**
      * Handles player join events.
      * 
-     * @param playerName the name of the player joining
+     * @param event the player join event
      */
-    public void onPlayerJoin(String playerName) {
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        String playerName = event.getPlayer().getName();
         System.out.println("%s joined the game".formatted(playerName));
         
         // Add player to manager
@@ -59,6 +63,7 @@ public class PlayerEvents {
             teamManager.addPlayer(playerName, team);
             System.out.println("%s assigned to %s team".formatted(playerName, team));
             
+            event.getPlayer().sendMessage("Welcome to CTF! You are on " + team + " team");
             alertManager.showTitle(playerName, "Welcome to CTF!", "You are on " + team + " team");
         }
         
@@ -74,9 +79,10 @@ public class PlayerEvents {
     /**
      * Handles player quit events.
      * 
-     * @param playerName the name of the player quitting
+     * @param event the player quit event
      */
-    public void onPlayerQuit(String playerName) {
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        String playerName = event.getPlayer().getName();
         System.out.println("%s left the game".formatted(playerName));
         
         // Handle flag if player was carrying one
@@ -103,10 +109,12 @@ public class PlayerEvents {
     /**
      * Handles player death events.
      * 
-     * @param playerName the name of the player who died
-     * @param killerName the name of the player who killed them (null if environmental death)
+     * @param event the player death event
      */
-    public void onPlayerDeath(String playerName, String killerName) {
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        String playerName = event.getPlayer().getName();
+        String killerName = event.getKiller() != null ? event.getKiller().getName() : null;
+        
         System.out.println("%s was killed%s".formatted(
             playerName,
             killerName != null ? " by " + killerName : ""
@@ -133,8 +141,10 @@ public class PlayerEvents {
             if (killerName != null) {
                 alertManager.broadcastCarrierKilled(killerName);
                 alertManager.showTitle(killerName, "Carrier Killed!", "+50 points");
+                event.getKiller().sendMessage("You killed the flag carrier! +50 points");
             }
             
+            event.getPlayer().sendMessage("You dropped the " + flagTeam + " flag!");
             System.out.println("%s flag dropped at death location".formatted(flagTeam));
         }
         
@@ -142,6 +152,7 @@ public class PlayerEvents {
         String team = playerManager.getTeam(playerName);
         if (team != null) {
             playerManager.respawnPlayer(playerName, team);
+            event.getPlayer().sendMessage("You have been respawned");
         }
     }
     

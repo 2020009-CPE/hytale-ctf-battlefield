@@ -1,7 +1,10 @@
 package com.hytale.ctf;
 
+import com.hytale.api.HytaleMod;
+import com.hytale.api.command.Command;
+import com.hytale.api.event.*;
 import com.hytale.ctf.arena.ArenaManager;
-import com.hytale.ctf.commands.CTFCommand;
+import com.hytale.ctf.commands.CTFCommandAdapter;
 import com.hytale.ctf.events.BlockEvents;
 import com.hytale.ctf.events.FlagEvents;
 import com.hytale.ctf.events.GameEvents;
@@ -16,17 +19,13 @@ import com.hytale.ctf.ui.AlertManager;
 import com.hytale.ctf.ui.HUDManager;
 import com.hytale.ctf.util.MessageUtil;
 
-import java.io.File;
-import java.util.logging.Logger;
-
 /**
  * Main plugin class for Hytale CTF Battlefield.
- * Entry point for the plugin using Java 25 features.
+ * Entry point for the mod using Java 25 features and Hytale API.
  */
-public class CTFPlugin {
+public class CTFPlugin extends HytaleMod {
     
     private static CTFPlugin instance;
-    private final Logger logger;
     
     // Managers
     private ArenaManager arenaManager;
@@ -45,25 +44,22 @@ public class CTFPlugin {
     private GameEvents gameEvents;
     private PlayerEvents playerEvents;
     
-    // Configuration
-    private File dataFolder;
-    
     public CTFPlugin() {
         instance = this;
-        this.logger = Logger.getLogger("CTF-Battlefield");
+    }
+    
+    @Override
+    public void onLoad() {
+        getLogger().info("Loading Hytale CTF Battlefield");
     }
     
     /**
-     * Plugin enable - called when plugin starts
+     * Mod enable - called when mod starts
      */
+    @Override
     public void onEnable() {
-        logger.info("Enabling Hytale CTF Battlefield (Java 25)");
-        
-        // Create data folder
-        dataFolder = new File("plugins/CTF-Battlefield");
-        if (!dataFolder.exists()) {
-            dataFolder.mkdirs();
-        }
+        getLogger().info("Enabling Hytale CTF Battlefield (Java 25)");
+        getLogger().info("Using Java " + System.getProperty("java.version"));
         
         // Initialize configuration
         loadConfiguration();
@@ -80,15 +76,15 @@ public class CTFPlugin {
         // Load data
         loadData();
         
-        logger.info("CTF Battlefield enabled successfully!");
-        logger.info("Using Java " + System.getProperty("java.version"));
+        getLogger().info("CTF Battlefield enabled successfully!");
     }
     
     /**
-     * Plugin disable - called when plugin stops
+     * Mod disable - called when mod stops
      */
+    @Override
     public void onDisable() {
-        logger.info("Disabling Hytale CTF Battlefield");
+        getLogger().info("Disabling Hytale CTF Battlefield");
         
         // Save all data
         if (dataManager != null) {
@@ -100,7 +96,7 @@ public class CTFPlugin {
             game.stop();
         }
         
-        logger.info("CTF Battlefield disabled successfully!");
+        getLogger().info("CTF Battlefield disabled successfully!");
     }
     
     /**
@@ -110,23 +106,23 @@ public class CTFPlugin {
         // In a real implementation, this would load from config.yml
         // For now, we'll use defaults
         MessageUtil.setPrefix("&8[&bCTF&8]&r ");
-        logger.info("Configuration loaded");
+        getLogger().info("Configuration loaded");
     }
     
     /**
      * Initialize all managers
      */
     private void initializeManagers() {
-        logger.info("Initializing managers...");
+        getLogger().info("Initializing managers...");
         
-        dataManager = new DataManager(dataFolder);
+        dataManager = new DataManager(getDataFolder());
         arenaManager = new ArenaManager(dataManager);
         structureManager = new StructureManager();
         teamManager = new TeamManager();
         playerManager = new PlayerManager(dataManager);
         flagManager = new FlagManager(structureManager);
-        alertManager = new AlertManager();
-        hudManager = new HUDManager();
+        alertManager = new AlertManager(getServer());
+        hudManager = new HUDManager(getServer());
         game = new CTFGame(
             arenaManager,
             flagManager,
@@ -136,62 +132,65 @@ public class CTFPlugin {
             hudManager
         );
         
-        logger.info("Managers initialized");
+        getLogger().info("Managers initialized");
     }
     
     /**
      * Register command handlers
      */
     private void registerCommands() {
-        logger.info("Registering commands...");
+        getLogger().info("Registering commands...");
         
-        // In a real implementation, this would register with the server
-        new CTFCommand(
+        // Create and register the CTF command
+        Command ctfCommand = new CTFCommandAdapter(
             arenaManager,
             flagManager,
             playerManager,
             teamManager,
             game
         );
+        getCommandManager().registerCommand(ctfCommand);
         
-        logger.info("Commands registered");
+        getLogger().info("Commands registered");
     }
     
     /**
      * Register event handlers
      */
     private void registerEvents() {
-        logger.info("Registering event handlers...");
+        getLogger().info("Registering event handlers...");
         
         blockEvents = new BlockEvents(game, arenaManager);
         flagEvents = new FlagEvents(game, flagManager, playerManager);
         gameEvents = new GameEvents(game);
         playerEvents = new PlayerEvents(game, playerManager, teamManager);
         
-        // In a real implementation, these would be registered with the event system
+        // Register Hytale event listeners
+        EventManager eventManager = getEventManager();
+        eventManager.registerListener(BlockBreakEvent.class, blockEvents::onBlockBreak);
+        eventManager.registerListener(BlockPlaceEvent.class, blockEvents::onBlockPlace);
+        eventManager.registerListener(PlayerJoinEvent.class, playerEvents::onPlayerJoin);
+        eventManager.registerListener(PlayerQuitEvent.class, playerEvents::onPlayerQuit);
+        eventManager.registerListener(PlayerDeathEvent.class, playerEvents::onPlayerDeath);
         
-        logger.info("Event handlers registered");
+        getLogger().info("Event handlers registered");
     }
     
     /**
      * Load persistent data
      */
     private void loadData() {
-        logger.info("Loading data...");
+        getLogger().info("Loading data...");
         
         dataManager.loadAll();
         
-        logger.info("Data loaded");
+        getLogger().info("Data loaded");
     }
     
     // Getters
     
     public static CTFPlugin getInstance() {
         return instance;
-    }
-    
-    public Logger getLogger() {
-        return logger;
     }
     
     public ArenaManager getArenaManager() {
@@ -228,29 +227,5 @@ public class CTFPlugin {
     
     public HUDManager getHUDManager() {
         return hudManager;
-    }
-    
-    public File getDataFolder() {
-        return dataFolder;
-    }
-    
-    /**
-     * Main entry point for standalone testing
-     */
-    public static void main(String[] args) {
-        CTFPlugin plugin = new CTFPlugin();
-        plugin.onEnable();
-        
-        // Keep running for testing
-        System.out.println("CTF Plugin is running. Press Ctrl+C to stop.");
-        
-        // Add shutdown hook
-        Runtime.getRuntime().addShutdownHook(new Thread(plugin::onDisable));
-        
-        try {
-            Thread.currentThread().join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
     }
 }

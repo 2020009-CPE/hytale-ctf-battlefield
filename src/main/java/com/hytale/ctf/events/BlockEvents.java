@@ -1,11 +1,15 @@
 package com.hytale.ctf.events;
 
+import com.hytale.api.event.BlockBreakEvent;
+import com.hytale.api.event.BlockPlaceEvent;
 import com.hytale.ctf.game.CTFGame;
 import com.hytale.ctf.arena.ArenaManager;
+import com.hytale.ctf.arena.Location;
 
 /**
  * Handles block-related events during CTF games.
  * Manages block placement and breaking within game arenas.
+ * Integrates with Hytale event system.
  * 
  * @since 1.0
  */
@@ -26,111 +30,149 @@ public class BlockEvents {
     }
     
     /**
-     * Handles block placement events.
+     * Handles Hytale block placement events.
      * Checks if the player is allowed to place blocks at the specified location.
      * 
-     * @param player the name of the player placing the block
-     * @param location the location where the block is being placed [x, y, z]
-     * @param blockType the type of block being placed
-     * @return true if the placement is allowed, false otherwise
+     * @param event the Hytale block place event
      */
-    public boolean onBlockPlace(String player, double[] location, String blockType) {
-        if (location == null || location.length != 3) {
-            return false;
-        }
+    public void onBlockPlace(BlockPlaceEvent event) {
+        // Convert Hytale location to internal location
+        Location location = event.getLocation().toInternalLocation();
         
         // Check if game is active
         if (!game.isActive()) {
-            System.out.println("Block placement denied: Game is not active");
-            return false;
+            event.setCancelled(true);
+            event.getPlayer().sendMessage("§cCannot place blocks: Game is not active");
+            return;
         }
         
-        // Check if location is within arena boundaries
-        if (!arenaManager.isWithinBoundaries(location)) {
-            System.out.println("Block placement denied for %s: Outside arena boundaries".formatted(player));
-            return false;
+        // Check if building is enabled
+        if (!game.getSettings().buildEnabled()) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage("§cBuilding is disabled in this game");
+            return;
         }
         
-        // Check if location is in a build zone
-        if (!arenaManager.isInBuildZone(location)) {
-            System.out.println("Block placement denied for %s: Not in build zone".formatted(player));
-            return false;
+        // Check arena boundaries
+        if (!isWithinActiveArena(location)) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage("§cCannot place blocks outside arena boundaries");
+            return;
         }
         
-        // Check if trying to place on flag location
-        if (isBlockingFlag(location)) {
-            System.out.println("Block placement denied for %s: Cannot block flag".formatted(player));
-            return false;
+        // Check no-build zones (near flags)
+        if (isInNoBuildZone(location)) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage("§cCannot build in protected zone near flags");
+            return;
         }
-        
-        System.out.println("%s placed %s at %.1f, %.1f, %.1f".formatted(
-            player, blockType, location[0], location[1], location[2]
-        ));
-        return true;
     }
     
     /**
-     * Handles block breaking events.
+     * Handles Hytale block break events.
      * Checks if the player is allowed to break blocks at the specified location.
      * 
-     * @param player the name of the player breaking the block
-     * @param location the location of the block being broken [x, y, z]
-     * @return true if the breaking is allowed, false otherwise
+     * @param event the Hytale block break event
      */
-    public boolean onBlockBreak(String player, double[] location) {
-        if (location == null || location.length != 3) {
-            return false;
+    public void onBlockBreak(BlockBreakEvent event) {
+        // Convert Hytale location to internal location
+        Location location = event.getLocation().toInternalLocation();
+        String blockType = event.getBlockType().getType();
+        
+        // Check if this is a flag block
+        if (isFlagBlock(blockType)) {
+            handleFlagBreak(event);
+            return;
         }
         
         // Check if game is active
         if (!game.isActive()) {
-            System.out.println("Block breaking denied: Game is not active");
-            return false;
+            event.setCancelled(true);
+            event.getPlayer().sendMessage("§cCannot break blocks: Game is not active");
+            return;
         }
         
-        // Check if location is within arena boundaries
-        if (!arenaManager.isWithinBoundaries(location)) {
-            System.out.println("Block breaking denied for %s: Outside arena boundaries".formatted(player));
-            return false;
+        // Check if breaking is enabled
+        if (!game.getSettings().breakEnabled()) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage("§cBreaking blocks is disabled in this game");
+            return;
         }
-        
-        // Check if trying to break flag block
-        if (isFlagBlock(location)) {
-            System.out.println("Block breaking denied for %s: Cannot break flag block".formatted(player));
-            return false;
-        }
-        
-        // Check if block is protected arena structure
-        if (arenaManager.isProtectedBlock(location)) {
-            System.out.println("Block breaking denied for %s: Protected arena structure".formatted(player));
-            return false;
-        }
-        
-        System.out.println("%s broke block at %.1f, %.1f, %.1f".formatted(
-            player, location[0], location[1], location[2]
-        ));
-        return true;
     }
     
     /**
-     * Checks if a location would block a flag.
-     * 
-     * @param location the location to check [x, y, z]
-     * @return true if the location would block a flag, false otherwise
+     * Check if location is within the active arena
      */
-    private boolean isBlockingFlag(double[] location) {
-        // Implementation would check against flag locations
+    private boolean isWithinActiveArena(Location location) {
+        var currentArena = game.getCurrentArena();
+        if (currentArena == null) {
+            return false;
+        }
+        return currentArena.contains(location);
+    }
+    
+    /**
+     * Check if location is in a no-build zone (near flags)
+     */
+    private boolean isInNoBuildZone(Location location) {
+        var currentArena = game.getCurrentArena();
+        if (currentArena == null) {
+            return false;
+        }
+        
+        int noBuildRadius = game.getSettings().noBuildZoneRadius();
+        
+        // Check distance to red flag
+        if (currentArena.redFlag() != null) {
+            if (location.distance(currentArena.redFlag()) < noBuildRadius) {
+                return true;
+            }
+        }
+        
+        // Check distance to blue flag
+        if (currentArena.blueFlag() != null) {
+            if (location.distance(currentArena.blueFlag()) < noBuildRadius) {
+                return true;
+            }
+        }
+        
         return false;
     }
     
     /**
-     * Checks if a location contains a flag block.
-     * 
-     * @param location the location to check [x, y, z]
-     * @return true if the location is a flag block, false otherwise
+     * Check if block type is a flag
      */
-    private boolean isFlagBlock(double[] location) {
-        // Implementation would check against flag block locations
-        return false;
+    private boolean isFlagBlock(String blockType) {
+        return blockType != null && (
+            blockType.contains("flag_red") || 
+            blockType.contains("flag_blue")
+        );
+    }
+    
+    /**
+     * Handle flag block break (flag capture)
+     */
+    private void handleFlagBreak(BlockBreakEvent event) {
+        if (!game.isActive()) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage("§cGame is not active");
+            return;
+        }
+        
+        String blockType = event.getBlockType().getType();
+        String playerName = event.getPlayer().getName();
+        
+        // Determine which flag was broken
+        boolean isRedFlag = blockType.contains("flag_red");
+        boolean isBlueFlag = blockType.contains("flag_blue");
+        
+        if (isRedFlag) {
+            game.handleFlagSteal(playerName, "red");
+        } else if (isBlueFlag) {
+            game.handleFlagSteal(playerName, "blue");
+        }
+        
+        // Allow the break (flag pickup)
+        event.setCancelled(false);
     }
 }
