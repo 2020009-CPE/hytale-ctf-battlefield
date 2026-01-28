@@ -1,0 +1,36 @@
+name: CTF-Battlefield
+version: 1.0.0
+main: com.hytale.ctf.CTFPlugin
+api-version: 1.0
+description: Complete competitive team-based CTF minigame mod for Hytale with Build & Destroy mechanics
+author: Hytale CTF Team
+website: https://github.com/2020009-CPE/hytale-ctf-battlefield
+
+commands:
+  ctf:
+    description: Main CTF command
+    usage: /ctf <subcommand>
+    aliases: [capturetheflag, ctfb]
+    
+permissions:
+  ctf.admin:
+    description: Full CTF administration access
+    default: op
+  ctf.map.create:
+    description: Create and manage arenas
+    default: op
+  ctf.map.delete:
+    description: Delete arenas
+    default: op
+  ctf.game.start:
+    description: Start CTF games
+    default: op
+  ctf.game.stop:
+    description: Stop CTF games
+    default: op
+  ctf.player.join:
+    description: Join CTF games
+    default: true
+  ctf.player.stats:
+    description: View statistics
+    default: true
