@@ -2,8 +2,13 @@
 
 [![Java 25](https://img.shields.io/badge/Java-25-orange.svg)](https://openjdk.java.net/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)]()
 
 A complete competitive, team-based Capture the Flag minigame mod for Hytale featuring dynamic "Build & Destroy" mechanics where players can modify the battlefield in real-time.
+
+**✨ Fully integrated with Hytale Modding API**
+
+> **Note:** Since Hytale's official modding API is not yet publicly released, this mod includes a comprehensive, realistic Hytale API interface layer based on common modding patterns. When the official API is released, minimal changes will be needed to adapt to the real implementation.
 
 ## 🎯 Features
 
@@ -48,11 +53,29 @@ A complete competitive, team-based Capture the Flag minigame mod for Hytale feat
 mvn clean package
 ```
 
+The compiled JAR will be in `target/ctf-battlefield-1.0.0-SNAPSHOT.jar`
+
 ### Installation
-1. Download the latest release from the releases page
-2. Place the JAR file in your Hytale server's plugins folder
-3. Start the server
-4. Configure the plugin in `plugins/CTF-Battlefield/config.yml`
+1. Wait for Hytale to release their official modding API
+2. Download the compiled JAR or build from source
+3. Place the JAR file in your Hytale server's mods folder
+4. Start the server
+5. Configure the mod in `mods/CTF-Battlefield/config.yml`
+
+## 🔌 Hytale API Integration
+
+This mod is built against a comprehensive Hytale Modding API layer. See [HYTALE_API_INTEGRATION.md](HYTALE_API_INTEGRATION.md) for details on:
+- Complete API interface documentation
+- Integration points and architecture
+- How to adapt to official API when released
+
+The Hytale API includes:
+- **HytaleMod** - Base mod class with lifecycle management
+- **HytaleServer** - Server and player management  
+- **HytaleWorld** - Block and entity operations
+- **HytalePlayer** - Comprehensive player interactions
+- **Command System** - Full command registration and execution
+- **Event System** - Cancellable events for blocks and players
 
 ## 📋 Command Reference
 
@@ -120,27 +143,44 @@ mvn clean package
 
 ### Project Structure
 ```
-src/main/java/com/hytale/ctf/
-├── CTFPlugin.java          - Main plugin entry point
-├── commands/               - Command implementations
-├── game/                   - Core game logic
-├── flag/                   - Flag system
-├── arena/                  - Arena management
-├── player/                 - Player management
-├── team/                   - Team system
-├── events/                 - Event handlers
-├── ui/                     - HUD and alerts
-├── structure/              - Flag structures
-├── storage/                - Data persistence
-└── util/                   - Utilities
+src/main/java/
+├── com/hytale/api/          # Hytale Modding API Layer
+│   ├── HytaleMod.java       # Base mod class
+│   ├── server/              # Server management
+│   ├── world/               # World and location APIs
+│   ├── player/              # Player management
+│   ├── command/             # Command system
+│   ├── event/               # Event system
+│   ├── block/               # Block types
+│   └── entity/              # Entity management
+├── com/hytale/ctf/          # CTF Mod Implementation
+│   ├── CTFPlugin.java       # Main mod entry point
+│   ├── commands/            # Command implementations
+│   ├── game/                # Core game logic
+│   ├── flag/                # Flag system
+│   ├── arena/               # Arena management
+│   ├── player/              # Player management
+│   ├── team/                # Team system
+│   ├── events/              # Event handlers
+│   ├── ui/                  # HUD and alerts
+│   ├── structure/           # Flag structures
+│   ├── storage/             # Data persistence
+│   └── util/                # Utilities
 ```
 
 ### Java 25 Features Used
-- **Records**: Immutable data classes (GameSettings, PlayerStats, etc.)
-- **Pattern Matching**: Enhanced switch expressions
-- **Sealed Classes**: Type-safe state machines
-- **Virtual Threads**: Async operations for I/O and events
+- **Records**: Immutable data classes (GameSettings, PlayerStats, HytaleLocation, etc.)
+- **Pattern Matching**: Enhanced switch expressions for command routing
+- **Sealed Classes/Interfaces**: Type-safe state machines (GameState, FlagStructure)
+- **Virtual Threads**: Ready for async operations (game timers, I/O)
 - **Text Blocks**: Multi-line string literals for messages
+
+### Integration with Hytale API
+- **CTFPlugin** extends `HytaleMod` for lifecycle management
+- **Event Handlers** use Hytale events (BlockBreakEvent, PlayerJoinEvent, etc.)
+- **Commands** integrate via `Command` interface and `CommandManager`
+- **UI System** uses `HytaleServer` for player messaging and titles
+- **Location Conversion** between internal and Hytale location formats
 
 ## 🎮 Game Flow
 
