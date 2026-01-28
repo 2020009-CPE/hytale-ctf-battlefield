@@ -90,7 +90,7 @@ public class PlayerManager {
      * @param player the player whose stats to save
      */
     public void saveStats(CTFPlayer player) {
-        dataManager.save("stats." + player.getPlayerName(), player.getStats());
+        dataManager.saveStats(player.getStats());
     }
     
     /**
@@ -100,7 +100,7 @@ public class PlayerManager {
      * @return the loaded stats, or empty stats if not found
      */
     private PlayerStats loadStats(String playerName) {
-        PlayerStats stats = dataManager.load("stats." + playerName, PlayerStats.class);
+        PlayerStats stats = dataManager.loadStats(playerName);
         return stats != null ? stats : PlayerStats.empty(playerName);
     }
     

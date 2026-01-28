@@ -160,8 +160,7 @@ public class ArenaManager {
      */
     private void loadArenas() {
         try {
-            @SuppressWarnings("unchecked")
-            Map<String, Arena> loaded = dataManager.load(ARENA_DATA_KEY, Map.class);
+            Map<String, Arena> loaded = dataManager.loadAllArenas();
             if (loaded != null) {
                 arenas.putAll(loaded);
             }
@@ -176,7 +175,10 @@ public class ArenaManager {
      */
     private void saveArenas() {
         try {
-            dataManager.save(ARENA_DATA_KEY, new HashMap<>(arenas));
+            // Save each arena individually
+            for (Arena arena : arenas.values()) {
+                dataManager.saveArena(arena);
+            }
         } catch (Exception e) {
             System.err.println("Failed to save arenas: " + e.getMessage());
         }
